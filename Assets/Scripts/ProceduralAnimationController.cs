@@ -5,13 +5,13 @@ public class ProceduralAnimationController : MonoBehaviour
     public Transform target;
     private Transform targetTransform;
 
-    public bool animatePosition;
+    public bool animatePosition = true;
     public bool animateRotation;
     public bool animateScale;
 
-    public Vector3 positionConstants;
-    public Vector3 rotationConstants;
-    public Vector3 scaleConstants;
+    public Vector3 positionConstants = new(1,1,1);
+    public Vector3 rotationConstants = new(1,1,1);
+    public Vector3 scaleConstants = new(1,1,1);
 
     [HideInInspector]
     public bool disableSimulation;

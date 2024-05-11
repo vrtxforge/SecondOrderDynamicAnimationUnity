@@ -274,8 +274,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 374334121}
   animatePosition: 1
-  animateRotation: 1
-  animateScale: 1
+  animateRotation: 0
+  animateScale: 0
   positionConstants: {x: 1, y: 1, z: 1}
   rotationConstants: {x: 1, y: 1, z: 1}
   scaleConstants: {x: 1, y: 1, z: 1}
