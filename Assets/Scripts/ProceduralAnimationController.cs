@@ -6,20 +6,33 @@ public class ProceduralAnimationController : MonoBehaviour
     private Transform targetTransform;
 
     public bool animatePosition;
+    public bool animateRotation;
+    public bool animateScale;
 
     public Vector3 positionConstants;
+    public Vector3 rotationConstants;
+    public Vector3 scaleConstants;
 
     [HideInInspector]
     public bool disableSimulation;
 
     private SecondOrderDynamics movementDynamics;
+    private SecondOrderDynamics rotationDynamics;
+    private SecondOrderDynamics scaleDynamics;
 
+    private Transform defaultTransform;
 
     private void Start()
     {
+        defaultTransform = transform;
         // Initialize SecondOrderDynamics with appropriate values
+        Quaternion initialRotation = transform.rotation;
+        Vector3 initialScale = transform.localScale;
         Vector3 initialPosition = transform.position;
+        Vector4 initialRotationV4 = new(initialRotation.x, initialRotation.y, initialRotation.z, initialRotation.w);
         movementDynamics = new(positionConstants.x, positionConstants.y, positionConstants.z, initialPosition);
+        rotationDynamics = new(rotationConstants.x, rotationConstants.y, rotationConstants.z, initialRotationV4);
+        scaleDynamics = new(scaleConstants.x, scaleConstants.y, scaleConstants.z, initialScale);
 
         // Set the initial target position
         targetTransform = target;
@@ -40,6 +53,36 @@ public class ProceduralAnimationController : MonoBehaviour
         else
         {
             transform.position = targetTransform.position;
+        }
+
+        if (animateRotation)
+        {
+            //ROTATION
+            //update the target rotation and convert it into a vector4
+            Quaternion targetRotation = targetTransform.rotation;
+            Vector4 targetRotationV4 = new(targetRotation.x, targetRotation.y, targetRotation.z, targetRotation.w);
+
+            Vector4 newRotation = rotationDynamics.Update(Time.deltaTime, targetRotationV4, disableSimulation);
+
+            //reconvert rotation into the quaternion
+            Quaternion finalRotation = new(newRotation.x, newRotation.y, newRotation.z, newRotation.w);
+
+            transform.rotation = finalRotation;
+        }
+        else
+        {
+            transform.rotation = targetTransform.rotation;
+        }
+
+        if(animateScale)
+        {
+            //SCALE
+            Vector3 newScale = scaleDynamics.Update(Time.deltaTime, targetTransform.localScale, disableSimulation);
+            transform.localScale = newScale;
+        }
+        else
+        {
+            transform.localScale = defaultTransform.localScale;
         }
     }
 }

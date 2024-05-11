@@ -274,7 +274,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 374334121}
   animatePosition: 1
+  animateRotation: 1
+  animateScale: 1
   positionConstants: {x: 1, y: 1, z: 1}
+  rotationConstants: {x: 1, y: 1, z: 1}
+  scaleConstants: {x: 1, y: 1, z: 1}
   disableSimulation: 0
 --- !u!1 &705507993
 GameObject:
