@@ -22,7 +22,8 @@ public class ProceduralAnimationControllerEditor : Editor
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("f", GUILayout.Width(10));
-            positionConstants.x = EditorGUILayout.FloatField(positionConstants.x, GUILayout.Width(EditorGUIUtility.labelWidth * 0.5f));
+            float fValue = Mathf.Max(EditorGUILayout.FloatField(positionConstants.x, GUILayout.Width(EditorGUIUtility.labelWidth * 0.5f)), float.Epsilon);
+            positionConstants.x = fValue;
 
 
             GUILayout.Label("z", GUILayout.Width(10));
@@ -41,7 +42,7 @@ public class ProceduralAnimationControllerEditor : Editor
 
         pac.animateRotation = EditorGUILayout.Toggle("Animate Rotation", pac.animateRotation);
 
-        if(pac.animateRotation)
+        if (pac.animateRotation)
         {
             EditorGUILayout.LabelField("Rotation Constants", EditorStyles.boldLabel);
             EditorGUILayout.Space(5);
