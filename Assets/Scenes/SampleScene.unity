@@ -274,11 +274,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 374334121}
   animatePosition: 1
-  animateRotation: 0
-  animateScale: 0
-  positionConstants: {x: 5.24, y: 0.18, z: 1}
-  rotationConstants: {x: 1, y: 2, z: 2}
-  scaleConstants: {x: 1, y: 1, z: 1}
+  animateRotation: 1
+  animateScale: 1
+  positionConstants: {x: 3.46, y: 0.08, z: 1}
+  rotationConstants: {x: 1.84, y: 0.24, z: 4.53}
+  scaleConstants: {x: 2.32, y: 0.39, z: 1}
   disableSimulation: 0
 --- !u!1 &705507993
 GameObject:
@@ -466,43 +466,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1964334171
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1964334172}
-  m_Layer: 0
-  m_Name: target
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1964334172
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1964334171}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 963194228}
   - {fileID: 705507995}
-  - {fileID: 1964334172}
   - {fileID: 413419328}
   - {fileID: 374334121}

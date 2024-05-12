@@ -6,25 +6,36 @@ public class ProceduralAnimationControllerEditor : Editor
 {
     private const float defaultLength = 2.0f;
 
-    private float f, z, r;
-    private SecondOrderDynamics func;
+    private Vector3 positionConstants;
+    private Vector3 rotationConstants;
+    private Vector3 scaleConstants;
+    private SecondOrderDynamics positionFunc;
+    private SecondOrderDynamics rotationFunc;
+    private SecondOrderDynamics scaleFunc;
     private Material mat;
-    private EvaluationData evalData;
+    private EvaluationData positionEvalData;
+    private EvaluationData rotationEvalData;
+    private EvaluationData scaleEvalData;
     private bool constantsChanged = false;
 
     private void OnEnable()
     {
         var shader = Shader.Find("Hidden/Internal-Colored");
         mat = new Material(shader);
-        evalData = new EvaluationData();
-        InitFunction();
+        positionEvalData = new EvaluationData();
+        rotationEvalData = new EvaluationData();
+        scaleEvalData = new EvaluationData();
+        InitFunctions();
     }
 
     private void OnDisable()
     {
-        func = null;
-        evalData = null;
-        f = z = r = float.NaN;
+        positionFunc = null;
+        rotationFunc = null;
+        scaleFunc = null;
+        positionEvalData = null;
+        rotationEvalData = null;
+        scaleEvalData = null;
         DestroyImmediate(mat);
     }
 
@@ -35,8 +46,8 @@ public class ProceduralAnimationControllerEditor : Editor
 
         if (constantsChanged)
         {
-            InitFunction();
-            EvaluateFunction();
+            InitFunctions();
+            EvaluateFunctions();
             Repaint(); // Force repaint to update the graph
             constantsChanged = false;
         }
@@ -53,8 +64,8 @@ public class ProceduralAnimationControllerEditor : Editor
             float rectWidth = rect.width;
             float rectHeight = rect.height;
 
-            float x_AxisOffset = rectHeight * Mathf.InverseLerp(evalData.Y_min, evalData.Y_max, 0);
-            float defaultValueOffset = rectHeight * Mathf.InverseLerp(evalData.Y_min, evalData.Y_max, 1);
+            float x_AxisOffset = rectHeight * Mathf.InverseLerp(positionEvalData.Y_min, positionEvalData.Y_max, 0);
+            float defaultValueOffset = rectHeight * Mathf.InverseLerp(positionEvalData.Y_min, positionEvalData.Y_max, 1);
 
             // Draw base graph
             GL.Begin(GL.LINES);
@@ -72,19 +83,13 @@ public class ProceduralAnimationControllerEditor : Editor
             GL.End();
 
             // Evaluate function values
-            if (evalData.IsEmpty) EvaluateFunction();
+            if (positionEvalData.IsEmpty || rotationEvalData.IsEmpty || scaleEvalData.IsEmpty)
+                EvaluateFunctions();
 
-            // Draw graph
-            GL.Begin(GL.LINE_STRIP);
-            GL.Color(Color.cyan);
-            for (int i = 0; i < evalData.Length; i++)
-            {
-                Vector2 point = evalData.GetItem(i);
-                float x_remap = Mathf.InverseLerp(evalData.X_min, evalData.X_max, point.x) * rectWidth;
-                float y_remap = Mathf.InverseLerp(evalData.Y_min, evalData.Y_max, point.y) * rectHeight;
-                GL.Vertex3(x_remap, rectHeight - y_remap, 0.0f);
-            }
-            GL.End();
+            // Draw graphs for position, rotation, and scale
+            DrawGraph(positionEvalData, Color.cyan, rectWidth, rectHeight);
+            DrawGraph(rotationEvalData, Color.magenta, rectWidth, rectHeight);
+            DrawGraph(scaleEvalData, Color.yellow, rectWidth, rectHeight);
 
             GL.PopMatrix();
             GUI.EndClip();
@@ -98,26 +103,35 @@ public class ProceduralAnimationControllerEditor : Editor
     private void UpdateInput()
     {
         var pac = (ProceduralAnimationController)target;
-        if (f != pac.positionConstants.x || z != pac.positionConstants.y || r != pac.positionConstants.z)
+        if (positionConstants != pac.positionConstants || rotationConstants != pac.rotationConstants || scaleConstants != pac.scaleConstants)
         {
-            f = pac.positionConstants.x;
-            z = pac.positionConstants.y;
-            r = pac.positionConstants.z;
+            positionConstants = pac.positionConstants;
+            rotationConstants = pac.rotationConstants;
+            scaleConstants = pac.scaleConstants;
             constantsChanged = true; // Set flag to indicate constants have changed
         }
     }
 
-    private void InitFunction()
+    private void InitFunctions()
     {
         var pac = (ProceduralAnimationController)target;
-        f = pac.positionConstants.x;
-        z = pac.positionConstants.y;
-        r = pac.positionConstants.z;
+        positionConstants = pac.positionConstants;
+        rotationConstants = pac.rotationConstants;
+        scaleConstants = pac.scaleConstants;
 
-        func = new SecondOrderDynamics(f, z, r, new Vector3(-defaultLength, 0, 0));
+        positionFunc = new SecondOrderDynamics(positionConstants.x, positionConstants.y, positionConstants.z, new Vector3(-defaultLength, 0, 0));
+        rotationFunc = new SecondOrderDynamics(rotationConstants.x, rotationConstants.y, rotationConstants.z, new Vector3(-defaultLength, 0, 0));
+        scaleFunc = new SecondOrderDynamics(scaleConstants.x, scaleConstants.y, scaleConstants.z, new Vector3(-defaultLength, 0, 0));
     }
 
-    private void EvaluateFunction()
+    private void EvaluateFunctions()
+    {
+        EvaluateFunction(positionFunc, positionEvalData, positionConstants);
+        EvaluateFunction(rotationFunc, rotationEvalData, rotationConstants);
+        EvaluateFunction(scaleFunc, scaleEvalData, scaleConstants);
+    }
+
+    private void EvaluateFunction(SecondOrderDynamics func, EvaluationData evalData, Vector3 constants)
     {
         evalData.Clear();
 
@@ -134,5 +148,19 @@ public class ProceduralAnimationControllerEditor : Editor
 
             evalData.Add(new Vector2(funcValues.Value.x, funcValues.Value.y));
         }
+    }
+
+    private void DrawGraph(EvaluationData evalData, Color color, float rectWidth, float rectHeight)
+    {
+        GL.Begin(GL.LINE_STRIP);
+        GL.Color(color);
+        for (int i = 0; i < evalData.Length; i++)
+        {
+            Vector2 point = evalData.GetItem(i);
+            float x_remap = Mathf.InverseLerp(evalData.X_min, evalData.X_max, point.x) * rectWidth;
+            float y_remap = Mathf.InverseLerp(evalData.Y_min, evalData.Y_max, point.y) * rectHeight;
+            GL.Vertex3(x_remap, rectHeight - y_remap, 0.0f);
+        }
+        GL.End();
     }
 }
