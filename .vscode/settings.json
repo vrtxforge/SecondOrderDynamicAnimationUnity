@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "SecondOrderDynamicAnimationUnity.sln"
+    "dotnet.defaultSolution": "procedural-animation-using-second-order-dynamic.sln"
 }
