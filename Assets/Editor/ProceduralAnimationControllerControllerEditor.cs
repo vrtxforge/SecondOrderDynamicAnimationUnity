@@ -1,6 +1,5 @@
 using UnityEditor;
 using UnityEngine;
-using System.Collections.Generic;
 
 [CustomEditor(typeof(ProceduralAnimationController))]
 public class ProceduralAnimationControllerEditor : Editor
@@ -11,6 +10,7 @@ public class ProceduralAnimationControllerEditor : Editor
     private SecondOrderDynamics func;
     private Material mat;
     private EvaluationData evalData;
+    private bool constantsChanged = false;
 
     private void OnEnable()
     {
@@ -32,6 +32,14 @@ public class ProceduralAnimationControllerEditor : Editor
     {
         DrawDefaultInspector();
         UpdateInput();
+
+        if (constantsChanged)
+        {
+            InitFunction();
+            EvaluateFunction();
+            Repaint(); // Force repaint to update the graph
+            constantsChanged = false;
+        }
 
         Rect rect = GUILayoutUtility.GetRect(10, 1000, 200, 200);
         if (Event.current.type == EventType.Repaint)
@@ -66,15 +74,6 @@ public class ProceduralAnimationControllerEditor : Editor
             // Evaluate function values
             if (evalData.IsEmpty) EvaluateFunction();
 
-            // Re-evaluate function values after input values changed
-            if (f != ((ProceduralAnimationController)target).positionConstants.x ||
-                z != ((ProceduralAnimationController)target).positionConstants.y ||
-                r != ((ProceduralAnimationController)target).positionConstants.z)
-            {
-                InitFunction();
-                EvaluateFunction();
-            }
-
             // Draw graph
             GL.Begin(GL.LINE_STRIP);
             GL.Color(Color.cyan);
@@ -95,6 +94,7 @@ public class ProceduralAnimationControllerEditor : Editor
             EditorGUI.LabelField(new Rect(0, rect.y + rect.height - x_AxisOffset, 20, 20), "0");
         }
     }
+
     private void UpdateInput()
     {
         var pac = (ProceduralAnimationController)target;
@@ -103,21 +103,20 @@ public class ProceduralAnimationControllerEditor : Editor
             f = pac.positionConstants.x;
             z = pac.positionConstants.y;
             r = pac.positionConstants.z;
-            InitFunction();
-            EditorApplication.QueuePlayerLoopUpdate();
+            constantsChanged = true; // Set flag to indicate constants have changed
         }
-        
     }
-
 
     private void InitFunction()
     {
-        f = ((ProceduralAnimationController)target).positionConstants.x;
-        z = ((ProceduralAnimationController)target).positionConstants.y;
-        r = ((ProceduralAnimationController)target).positionConstants.z;
+        var pac = (ProceduralAnimationController)target;
+        f = pac.positionConstants.x;
+        z = pac.positionConstants.y;
+        r = pac.positionConstants.z;
 
         func = new SecondOrderDynamics(f, z, r, new Vector3(-defaultLength, 0, 0));
     }
+
     private void EvaluateFunction()
     {
         evalData.Clear();
@@ -129,7 +128,7 @@ public class ProceduralAnimationControllerEditor : Editor
             float x_input = Mathf.InverseLerp(0, 299, i) * 2 * defaultLength - defaultLength;
             float y_input = x_input > 0 ? 1 : 0;
 
-            Vector3? funcValues = func.Update(T, new Vector4(x_input, y_input, 0, 0), false);
+            Vector3? funcValues = func.Update(T, new Vector3(x_input, y_input, 0), false);
 
             if (x_input <= 0) continue; // Data is gathered only after the Y value has changed
 
